@@ -14,10 +14,23 @@ module Rahyab
     end
 
     # Will send one or more sms to specified numbers
-    def send(sender, numbers, text)
-      builder = Builder::XmlMarkup.new
+    def send(sender, number, text)
+      builder = Builder::XmlMarkup.new(:indent=>2)
       builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
-      builder.smsBatch(company: @company, batchID: @batchID)
+      builder.smsBatch(company: @company, batchID: @batchID) do |b|
+        b.sms(msgClass: "1", binary: "True", dcs: "8") do |t|
+          t.destAddr() do |f|
+            f.declare! "[CDATA[%s]]" % sender
+          end
+          t.originAddr() do |f|
+            f.declare! "[CDATA[%s]]" % number
+          end
+          t.message() do |f|
+            f.declare! "[CDATA[#{text}]]"
+          end
+
+        end
+      end
     end
 
     def send_batch(sender, numbers, text)

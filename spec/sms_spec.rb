@@ -2,11 +2,19 @@ require_relative '../lib/rahyab'
 
 describe Rahyab::SMS do
   before :all do
-    @sms = Rahyab::SMS.new
+    @url = "http://193.104.22.14:2055/CPSMSService/Access"
+    @user = ENV['RAHYAB_USER']
+    @password = ENV['RAHYAB_PASS']
+    @company = ENV['RAHYAB_COMPANY']
+    @sender = ENV['RAHYAB_SENDER']
+    @numbers = ['+989366452290', '+989125601735']
+    @sms = Rahyab::SMS.new(@url, @user, @password)
   end
 
   it "Sends sms and returns id" do
-    @sms.send(sender, numbers, text)
+    x = @sms.send(@sender, @numbers, @text)
+    puts "0000000"
+    puts x
   end
 
   it "Sends batch sms and returns ids" do
