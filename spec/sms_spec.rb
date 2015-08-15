@@ -8,12 +8,12 @@ describe Rahyab::SMS do
     @company = ENV['RAHYAB_COMPANY']
     @sender = ENV['RAHYAB_SENDER']
     @numbers = ['+989366452290', '+989125601735']
-    @sms = Rahyab::SMS.new(@url, @user, @password)
+    @sms = Rahyab::SMS.new(@url, @user, @password, @company)
+    @text = "Hello World!"
   end
 
   it "Sends sms and returns id" do
     x = @sms.send(@sender, @numbers, @text)
-    puts "0000000"
     puts x
   end
 
