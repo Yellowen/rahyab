@@ -43,8 +43,18 @@ module Rahyab
         end
       end
       out_xml = builder.target!
-      puts out_xml
-      puts parse_result(send_xml(out_xml))
+      result = send_xml(out_xml)
+      source = XML::Parser.string(result)
+      content = source.parse
+      if content.find_first('ok')
+        if  content.find_first('ok').content.include? 'CHECK_OK'
+          return true
+        else
+          return "Something going wrong"
+        end
+      else
+        return content.find_first('message')
+      end
     end
 
     def send_batch(sender, numbers, text)
@@ -72,27 +82,11 @@ module Rahyab
       return content.find_first('/userBalance').content.strip
     end
 
-
     private
 
     # Check does the input contents Farsi Character
     def is_persian(str)
       str =~ /\p{Arabic}/
-    end
-
-    # Parse XML and return the message from result
-    def parse_result(result)
-      source = XML::Parser.string(result)
-      content = source.parse
-      if content.find_first('ok')
-        if  content.find_first('ok').content.include? 'CHECK_OK'
-          return true
-        else
-          return "Something going wrong"
-        end
-      else
-        return content.find_first('message')
-      end
     end
 
     # Send XMLmarkup to Web Service
