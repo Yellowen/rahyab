@@ -8,14 +8,14 @@ describe Rahyab::SMS do
     @password = ENV['RAHYAB_PASS']
     @company = ENV['RAHYAB_COMPANY']
     @sender = ENV['RAHYAB_SENDER']
-    @numbers = ['+989366452290', '+989125601735']
+    @numbers = ['+989125601735']
     @sms = Rahyab::SMS.new(@url, @user, @password, @company)
-    @text = "Hello World!"
+    @text = "Hello World"
   end
 
   it "Sends sms and returns id" do
     x = @sms.send(@sender, @numbers, @text)
-    puts x
+
   end
 
   it "Sends batch sms and returns ids" do
@@ -31,7 +31,7 @@ describe Rahyab::SMS do
   end
 
   it "Checks user credit" do
-    @sms.get_cache(sender, sms_id, number)
+    @sms.get_balance
   end
 
 end

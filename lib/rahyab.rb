@@ -25,6 +25,7 @@ module Rahyab
       binary           = is_persian(text) ? "true" : "false"
       builder          = Builder::XmlMarkup.new(:indent=>2)
       builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
+      builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
       builder.smsBatch(company: @company, batchID: batchID) do |b|
         b.sms(msgClass: msgClass, binary: binary, dcs: dcs) do |t|
           numbers.each do |number|
@@ -41,18 +42,11 @@ module Rahyab
         end
       end
       out_xml = builder.target!
-      # Send XMLmarkup to Web Service
-      uri = URI.parse(@url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.basic_auth @user, @password
-      request.body = out_xml
-      response = http.request(request)
-      return parse_result(response.body)
+      puts out_xml
+      puts parse_result(send_xml(out_xml))
     end
 
     def send_batch(sender, numbers, text)
-
     end
 
     # Check delivery status of several sms
@@ -66,8 +60,14 @@ module Rahyab
     end
 
     # Check the credit that how many sms can be send
-    def get_cache
-
+    def get_balance
+      builder = Builder::XmlMarkup.new(:indent=>2)
+      builder.instruct! :xml, version: "1.0"
+      builder.getUserBalance(company: @company)
+      out_xml = builder.target!
+      result = send_xml(out_xml)
+      puts "4" * 100
+      puts result
     end
 
 
@@ -82,7 +82,26 @@ module Rahyab
     def parse_result(result)
       source = XML::Parser.string(result)
       content = source.parse
-      return content.find_first('message').content
+      if content.find_first('ok')
+        if  content.find_first('ok').content.include? 'CHECK_OK'
+          return true
+        else
+          return "Something going wrong"
+        end
+      else
+        return content.find_first('message')
+      end
+    end
+
+    # Send XMLmarkup to Web Service
+    def send_xml(out_xml)
+      uri = URI.parse(@url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request.basic_auth @user, @password
+      request.body = out_xml
+      response = http.request(request)
+      return response.body
     end
   end
 end
