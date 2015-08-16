@@ -3,6 +3,7 @@ require "rahyab/version"
 require "builder"
 require 'net/http'
 require 'xml'
+require 'pry'
 
 module Rahyab
   class SMS
@@ -66,8 +67,9 @@ module Rahyab
       builder.getUserBalance(company: @company)
       out_xml = builder.target!
       result = send_xml(out_xml)
-      puts "4" * 100
-      puts result
+      source = XML::Parser.string(result)
+      content = source.parse
+      return content.find_first('/userBalance').content.strip
     end
 
 
