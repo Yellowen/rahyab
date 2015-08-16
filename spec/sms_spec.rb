@@ -14,8 +14,7 @@ describe Rahyab::SMS do
   end
 
   it "Sends sms and returns id" do
-    x = @sms.send(@sender, @numbers, @text)
-
+    @sms.send(@sender, @numbers, @text)
   end
 
   it "Sends batch sms and returns ids" do

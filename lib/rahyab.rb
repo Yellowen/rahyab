@@ -3,6 +3,7 @@ require "rahyab/version"
 require "builder"
 require 'net/http'
 require 'xml'
+require 'libxml_to_hash'
 require 'pry'
 
 module Rahyab
@@ -61,8 +62,19 @@ module Rahyab
     end
 
     # Check delivery status of several sms
-    def get_delivery(sender, sms_id)
+    def get_delivery(batchID)
+      builder = Builder::XmlMarkup.new(indent: 2)
+      builder.instruct! :xml, version: "1.0"
+      builder.smsStatusPoll(company: @company) do |b|
+        b.barch(batchID: batchID)
+      end
+      result = send_xml(builder.target!)
+      source = XML::Parser.string(result)
+      content = source.parse
 
+      puts "######################"
+      puts Hash.from_libxml(content)
+      puts "######################"
     end
 
     # Check delivery status of specified phone numer
@@ -72,11 +84,10 @@ module Rahyab
 
     # Check the credit that how many sms can be send
     def get_balance
-      builder = Builder::XmlMarkup.new(:indent=>2)
+      builder = Builder::XmlMarkup.new(indent: 2)
       builder.instruct! :xml, version: "1.0"
       builder.getUserBalance(company: @company)
-      out_xml = builder.target!
-      result = send_xml(out_xml)
+      result = send_xml(builder.target!)
       source = XML::Parser.string(result)
       content = source.parse
       return content.find_first('/userBalance').content.strip
