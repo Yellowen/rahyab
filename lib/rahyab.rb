@@ -18,10 +18,10 @@ module Rahyab
     end
 
     # Will send one or more sms to specified numbers
-    def send(sender, numbers, text, **params)
+    def send_sms(sender, numbers, text, **params)
       # Create the send XMLmarkup
-      identity         = "#{Time.now.to_i}#{rand(1000000..9999999)}"
-      batchID          = @company + identity
+      identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
+      batchID          = @company + "+" + identity
       msgClass         = params["flash"] ? "0" : "1"
       dcs              = is_persian(text) ? "8" : "0"
       binary           = is_persian(text) ? "true" : "false"
@@ -47,16 +47,23 @@ module Rahyab
       result = send_xml(out_xml)
       source = XML::Parser.string(result)
       content = source.parse
+      puts "######################"
+      puts out_xml
+      puts "######################"
+      puts content
+      puts "######################"
+      puts Hash.from_libxml(content)
       if content.find_first('ok')
         if  content.find_first('ok').content.include? 'CHECK_OK'
-          return true
+          return nil
         else
           return "Something going wrong"
         end
       else
-        return content.find_first('message')
+        return content.find_first('message').content.strip
       end
     end
+
 
     def send_batch(sender, numbers, text)
     end
@@ -65,16 +72,22 @@ module Rahyab
     def get_delivery(batchID)
       builder = Builder::XmlMarkup.new(indent: 2)
       builder.instruct! :xml, version: "1.0"
+      builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
       builder.smsStatusPoll(company: @company) do |b|
-        b.barch(batchID: batchID)
+        b.batch(batchID: batchID)
       end
-      result = send_xml(builder.target!)
+      out_xml = builder.target!
+      #puts "&&&&&&&&7"
+      #puts out_xml
+      #puts "&&&&&&&&7"
+      result = send_xml(out_xml)
       source = XML::Parser.string(result)
       content = source.parse
 
-      puts "######################"
-      puts Hash.from_libxml(content)
-      puts "######################"
+      #puts "######################"
+      #puts content
+      #puts Hash.from_libxml(content)
+      #puts "######################"
     end
 
     # Check delivery status of specified phone numer

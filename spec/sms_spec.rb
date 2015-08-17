@@ -11,18 +11,20 @@ describe Rahyab::SMS do
     @numbers = ['+989125601735']
     @sms = Rahyab::SMS.new(@url, @user, @password, @company)
     @text = "Hello World"
+    @batchID = ENV['RAHYAB_BATCH_ID']
   end
 
   it "Sends sms and returns id" do
-    @sms.send(@sender, @numbers, @text)
+    sms = @sms.send_sms(@sender, @numbers, @text)
+    expect(sms.class).to be(nil)
   end
 
   it "Sends batch sms and returns ids" do
-    @sms.send_batch(sender, numbers, text)
+    sms = @sms.send_batch(@sender, @numbers, @text)
   end
 
   it "Checks sms derivered" do
-    @sms.get_delivery(sender, sms_id)
+    @sms.get_delivery(@batchID)
   end
 
   it "Checks sms delivery by number" do
@@ -30,7 +32,7 @@ describe Rahyab::SMS do
   end
 
   it "Checks user credit" do
-    @sms.get_balance
+    balance = @sms.get_balance
   end
 
 end
