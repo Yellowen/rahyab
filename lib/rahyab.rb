@@ -77,27 +77,13 @@ module Rahyab
     def get_delivery(batchID)
       builder = Builder::XmlMarkup.new(indent: 2)
       builder.instruct! :xml, version: "1.0"
-      builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
+      builder.declare! :DOCTYPE, :smsStatusPoll, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
       builder.smsStatusPoll(company: @company) do |b|
         b.batch(batchID: batchID)
       end
       out_xml = builder.target!
-      #puts "&&&&&&&&7"
-      #puts out_xml
-      #puts "&&&&&&&&7"
       result = send_xml(out_xml)
-      source = XML::Parser.string(result)
-      content = source.parse
-
-      #puts "######################"
-      #puts content
-      #puts Hash.from_libxml(content)
-      #puts "######################"
-    end
-
-    # Check delivery status of specified phone numer
-    def get_number_delivery(sender, sms_id, number)
-
+      puts Hash.from_libxml(result)
     end
 
     # Check the credit that how many sms can be send

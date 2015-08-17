@@ -24,7 +24,8 @@ describe Rahyab::SMS do
   end
 
   it "Checks sms derivered" do
-    @sms.get_delivery(@batchID)
+    delivery = @sms.get_delivery(@batchID)
+    expect(delivery.class).to be(Hash)
   end
 
   it "Checks user credit" do
