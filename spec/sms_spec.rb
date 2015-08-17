@@ -8,16 +8,16 @@ describe Rahyab::SMS do
     @password = ENV['RAHYAB_PASS']
     @company = ENV['RAHYAB_COMPANY']
     @sender = ENV['RAHYAB_SENDER']
-    @numbers = ['+989366452290']
+    @numbers = ['+989125601735']
     @sms = Rahyab::SMS.new(@url, @user, @password, @company)
     @text = "Hello World"
     @batchID = ENV['RAHYAB_BATCH_ID']
   end
 
-  it "Sends sms and returns id" do
-    sms = @sms.send_sms(@sender, @numbers, @text)
-    expect(sms.class).to be(String)
-  end
+  #it "Sends sms and returns id" do
+  #  sms = @sms.send_sms(@sender, @numbers, @text)
+  #  expect(sms.class).to be(String)
+  #end
 
   it "Sends batch sms and returns ids" do
     sms = @sms.send_batch(@sender, @numbers, @text)
@@ -29,7 +29,7 @@ describe Rahyab::SMS do
 
   it "Checks user credit" do
     balance = @sms.get_balance
-    expect(balance.class).to_be(Float)
+    expect(balance.class).to be(Float)
   end
 
 end

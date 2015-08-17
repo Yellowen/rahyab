@@ -108,7 +108,7 @@ module Rahyab
       result = send_xml(builder.target!)
       source = XML::Parser.string(result)
       content = source.parse
-      return content.find_first('/userBalance').content.strip
+      return content.find_first('/userBalance').content.strip.to_f
     end
 
     private
