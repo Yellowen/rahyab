@@ -8,6 +8,8 @@ require 'pry'
 
 module Rahyab
   class SMS
+    # Return Errors
+    attr_reader :errors
 
     # Constructor of Rahyab SMS Gateway
     def initialize(url, user, password, company)
@@ -25,7 +27,7 @@ module Rahyab
       msgClass         = params["flash"] ? "0" : "1"
       dcs              = is_persian(text) ? "8" : "0"
       binary           = is_persian(text) ? "true" : "false"
-      builder          = Builder::XmlMarkup.new(:indent=>2)
+      builder          = Builder::XmlMarkup.new()
       builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
       builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
       builder.smsBatch(company: @company, batchID: batchID) do |b|
@@ -35,7 +37,7 @@ module Rahyab
               f.declare! "[CDATA[%s]]" % number
             end
           end
-          t.originAddr() do |f|
+          t.origAddr() do |f|
             f.declare! "[CDATA[%s]]" % sender
           end
           t.message() do |f|
@@ -47,20 +49,23 @@ module Rahyab
       result = send_xml(out_xml)
       source = XML::Parser.string(result)
       content = source.parse
-      puts "######################"
-      puts out_xml
-      puts "######################"
-      puts content
-      puts "######################"
-      puts Hash.from_libxml(content)
+      #puts "######################"
+      #puts out_xml
+      #puts "######################"
+      #puts content
+      #puts "######################"
+      # puts Hash.from_libxml(content)
       if content.find_first('ok')
         if  content.find_first('ok').content.include? 'CHECK_OK'
-          return nil
+          puts batchID
+          batchID
         else
-          return "Something going wrong"
+          @errors = "Something going wrong"
+          nil
         end
       else
-        return content.find_first('message').content.strip
+        @errors = content.find_first('message').content.strip
+        nil
       end
     end
 
