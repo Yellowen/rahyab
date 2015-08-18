@@ -22,49 +22,50 @@ module Rahyab
     # Will send one or more sms to specified numbers
     def send_sms(sender, numbers, text, **params)
       # Create the send XMLmarkup
-      identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
-      batchID          = @company + "+" + identity
-      msgClass         = params["flash"] ? "0" : "1"
-      dcs              = is_persian(text) ? "8" : "0"
-      binary           = is_persian(text) ? "true" : "false"
-      builder          = Builder::XmlMarkup.new()
-      builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
-      builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
-      builder.smsBatch(company: @company, batchID: batchID) do |b|
-        b.sms(msgClass: msgClass, binary: binary, dcs: dcs) do |t|
-          numbers.each do |number|
-            t.destAddr() do |f|
-              f.declare! "[CDATA[%s]]" % number
+      if estimate_cost(numbers, text) < get_balance
+        identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
+        batchID          = @company + "+" + identity
+        msgClass         = params["flash"] ? "0" : "1"
+        dcs              = is_persian(text) ? "8" : "0"
+        binary           = !is_persian(text) ? "true" : "false"
+        builder          = Builder::XmlMarkup.new()
+        builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
+        builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
+        builder.smsBatch(company: @company, batchID: batchID) do |b|
+          b.sms(msgClass: msgClass, binary: binary, dcs: dcs) do |t|
+            numbers.each do |number|
+              t.destAddr() do |f|
+                f.declare! "[CDATA[%s]]" % number
+              end
+            end
+            t.origAddr() do |f|
+              f.declare! "[CDATA[%s]]" % sender
+            end
+            t.message() do |f|
+              f.declare! "[CDATA[\"#{text}\"]]"
             end
           end
-          t.origAddr() do |f|
-            f.declare! "[CDATA[%s]]" % sender
-          end
-          t.message() do |f|
-            f.declare! "[CDATA[#{text}]]"
-          end
         end
-      end
-      out_xml = builder.target!
-      result = send_xml(out_xml)
-      source = XML::Parser.string(result)
-      content = source.parse
-      #puts "######################"
-      #puts out_xml
-      #puts "######################"
-      #puts content
-      #puts "######################"
-      # puts Hash.from_libxml(content)
-      if content.find_first('ok')
-        if  content.find_first('ok').content.include? 'CHECK_OK'
-          puts batchID
-          batchID
+        out_xml = builder.target!
+        result = send_xml(out_xml)
+        source = XML::Parser.string(result)
+        binding.pry
+        content = source.parse
+
+        if content.find_first('ok')
+          if  content.find_first('ok').content.include? 'CHECK_OK'
+            puts batchID
+            batchID
+          else
+            @errors = "Something going wrong"
+            nil
+          end
         else
-          @errors = "Something going wrong"
+          @errors = content.find_first('message').content.strip
           nil
         end
       else
-        @errors = content.find_first('message').content.strip
+        @errors = 'Not enough balance'
         nil
       end
     end
@@ -83,7 +84,7 @@ module Rahyab
       end
       out_xml = builder.target!
       result = send_xml(out_xml)
-      puts Hash.from_libxml(result)
+      Hash.from_libxml(result)
     end
 
     # Check the credit that how many sms can be send
@@ -113,6 +114,24 @@ module Rahyab
       request.body = out_xml
       response = http.request(request)
       return response.body
+    end
+
+    # Cost estimates
+    def estimate_cost(numbers, text)
+      cost = 0
+      if is_persian(text)
+        sms_length = (text.length / 67.0).ceil
+      else
+        sms_length = (text.length / 157.0).ceil
+      end
+      numbers.each do |number|
+        if is_persian(text)
+          cost = cost + sms_length * 1.5
+        else
+          cost = cost + sms_length
+        end
+      end
+      cost
     end
   end
 end
