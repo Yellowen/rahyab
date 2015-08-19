@@ -7,6 +7,8 @@ require 'libxml_to_hash'
 require 'pry'
 
 module Rahyab
+  require 'rahyab/string'
+
   class SMS
     # Return Errors
     attr_reader :errors
@@ -25,9 +27,12 @@ module Rahyab
       if estimate_cost(numbers, text) < get_balance
         identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
         batchID          = @company + "+" + identity
+        is_persian_text  = is_persian(text)
         msgClass         = params["flash"] ? "0" : "1"
-        dcs              = is_persian(text) ? "8" : "0"
-        binary           = !is_persian(text) ? "true" : "false"
+        dcs              = is_persian_text ? "8" : "0"
+        binary           = is_persian_text ? "true" : "false"
+        text             = text.to_h if is_persian_text
+
         builder          = Builder::XmlMarkup.new()
         builder.instruct! :xml, version: "1.0", encoding: "UTF-8"
         builder.declare! :DOCTYPE, :smsBatch, :PUBLIC, "-//PERVASIVE//DTD CPAS 1.0//EN", "http://www.ubicomp.ir/dtd/Cpas.dtd"
@@ -42,19 +47,18 @@ module Rahyab
               f.declare! "[CDATA[%s]]" % sender
             end
             t.message() do |f|
-              f.declare! "[CDATA[\"#{text}\"]]"
+              f.declare! "[CDATA[#{text}]]"
             end
           end
         end
         out_xml = builder.target!
+
         result = send_xml(out_xml)
         source = XML::Parser.string(result)
-        binding.pry
         content = source.parse
 
         if content.find_first('ok')
           if  content.find_first('ok').content.include? 'CHECK_OK'
-            puts batchID
             batchID
           else
             @errors = "Something going wrong"

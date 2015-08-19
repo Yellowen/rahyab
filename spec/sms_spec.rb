@@ -8,14 +8,14 @@ describe Rahyab::SMS do
     @password = ENV['RAHYAB_PASS']
     @company = ENV['RAHYAB_COMPANY']
     @sender = ENV['RAHYAB_SENDER']
-    @numbers = ['+989358180918']
+    @numbers = ['+989125601735']
     @sms = Rahyab::SMS.new(@url, @user, @password, @company)
-    @text = "بفرمائید میل کنید"
+    @text = "sms"
     @batchID = ENV['RAHYAB_BATCH_ID']
   end
 
   it "Sends sms and returns id" do
-    sms = @sms.send_sms(@sender, @numbers, @text)
+    #sms = @sms.send_sms(@sender, @numbers, @text)
     expect(sms.class).to be(String)
   end
 
@@ -25,6 +25,7 @@ describe Rahyab::SMS do
 
   it "Checks sms derivered" do
     delivery = @sms.get_delivery(@batchID)
+    puts delivery
     expect(delivery.class).to be(Hash)
   end
 
