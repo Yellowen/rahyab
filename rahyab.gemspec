@@ -6,20 +6,22 @@ require 'rahyab/version'
 Gem::Specification.new do |spec|
   spec.name          = "rahyab"
   spec.version       = Rahyab::VERSION
-  spec.authors       = ["Behnam Ahmad Khan Beigi"]
-  spec.email         = ["yottanami@gnu.org"]
+  spec.authors       = ["Behnam Ahmad Khan Beigi", "Sameer Rahmany"]
+  spec.email         = ["yottanami@gnu.org", "lxsameer@gnu.org"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = "Ruby interface of Rahyab SMS service"
+  spec.description   = "Ruby gem to use Rahyab SMS service"
+  spec.homepage      = "http://www.yellowen.ir"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = "TODO: Set to 'http://mygemserver.com'"
+    spec.metadata['allowed_push_host'] = "https://rubygems.org"
   else
     raise "RubyGems 2.0 or newer is required to protect against public gem pushes."
   end
+  spec.licenses = ['GPL-2']
+  spec.test_files = Dir['spec/*']
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "exe"
