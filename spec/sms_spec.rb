@@ -8,7 +8,7 @@ describe Rahyab::SMS do
     @password = ENV['RAHYAB_PASS']
     @company = ENV['RAHYAB_COMPANY']
     @sender = ENV['RAHYAB_SENDER']
-    @numbers = ['+989125601735']
+    @numbers = ENV['RAHYAB_NUMBERS']
     @sms = Rahyab::SMS.new(@url, @user, @password, @company)
     @text = "sms"
     @batchID = ENV['RAHYAB_BATCH_ID']
