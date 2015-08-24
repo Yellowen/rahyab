@@ -1,10 +1,10 @@
 # coding: utf-8
-require "rahyab/version"
-require "builder"
+require 'rahyab/version'
+require 'builder'
 require 'net/http'
 require 'xml'
 require 'libxml_to_hash'
-require 'pry'
+
 
 module Rahyab
   require 'rahyab/string'
