@@ -51,6 +51,7 @@ module Rahyab
             end
           end
         end
+
         out_xml = builder.target!
 
         result = send_xml(out_xml)
@@ -72,6 +73,7 @@ module Rahyab
         @errors = 'Not enough balance'
         nil
       end
+          binding.pry
     end
 
 
@@ -99,6 +101,8 @@ module Rahyab
       result = send_xml(builder.target!)
       source = XML::Parser.string(result)
       content = source.parse
+      @errors = content.find_first('message').content.strip
+      return 0 if @errors
       return content.find_first('/userBalance').content.strip.to_f
     end
 
