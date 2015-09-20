@@ -40,4 +40,11 @@ describe Rahyab::SMS do
     expect(cost.class).to be(Fixnum)
   end
 
+  it "Check Authentication and returns because of wrong user/pass" do
+    user = 'wrongUser'
+    password = 'weongPassword'
+    sms = Rahyab::SMS.new(@url, user, password, @company)
+    result = sms.get_balance
+    expect(result).to be(0)
+  end
 end

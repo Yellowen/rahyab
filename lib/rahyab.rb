@@ -1,10 +1,10 @@
 # coding: utf-8
-require 'rahyab/version'
-require 'builder'
+require "rahyab/version"
+require "builder"
 require 'net/http'
 require 'xml'
 require 'libxml_to_hash'
-
+require 'pry'
 
 module Rahyab
   require 'rahyab/string'
@@ -24,7 +24,9 @@ module Rahyab
     # Will send one or more sms to specified numbers
     def send_sms(sender, numbers, text, **params)
       # Create the send XMLmarkup
-      if estimate_cost(numbers, text) < get_balance
+      estimate_cost = estimate_cost(numbers, text)
+      return -1 if estimate_cost == -1
+      if estimate_cost < get_balance
         identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
         batchID          = @company + "+" + identity
         is_persian_text  = is_persian(text)
@@ -73,7 +75,6 @@ module Rahyab
         @errors = 'Not enough balance'
         nil
       end
-          binding.pry
     end
 
 
