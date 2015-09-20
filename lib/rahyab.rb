@@ -14,11 +14,12 @@ module Rahyab
     attr_reader :errors
 
     # Constructor of Rahyab SMS Gateway
-    def initialize(url, user, password, company)
-      @url = url
-      @user = user
+    def initialize(url, user, password, company, logger = nil)
+      @url      = url
+      @user     = user
       @password = password
-      @company = company
+      @company  = company
+      @logger   = logger
     end
 
     # Will send one or more sms to specified numbers
@@ -96,46 +97,65 @@ module Rahyab
       builder = Builder::XmlMarkup.new(indent: 2)
       builder.instruct! :xml, version: "1.0"
       builder.getUserBalance(company: @company)
+
       result = send_xml(builder.target!)
+      
       source = XML::Parser.string(result)
       content = source.parse
-      return content.find_first('/userBalance').content.strip.to_f
+      log("Content: #{content}")
+      content.find_first('/userBalance').content.strip.to_f
     end
+
 
     private
 
-    # Check does the input contents Farsi Character
-    def is_persian(str)
-      str =~ /\p{Arabic}/
-    end
-
-    # Send XMLmarkup to Web Service
-    def send_xml(out_xml)
-      uri = URI.parse(@url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      request = Net::HTTP::Post.new(uri.request_uri)
-      request.basic_auth @user, @password
-      request.body = out_xml
-      response = http.request(request)
-      return response.body
-    end
-
-    # Cost estimates
-    def estimate_cost(numbers, text)
-      cost = 0
-      if is_persian(text)
-        sms_length = (text.length / 67.0).ceil
-      else
-        sms_length = (text.length / 157.0).ceil
-      end
-      numbers.each do |number|
-        if is_persian(text)
-          cost = cost + sms_length * 1.5
-        else
-          cost = cost + sms_length
+    def log(msg, level = :debug)
+      unless @logger.nil?
+        @logger.tagged('Rahyab') do
+            @logger.send(level, msg)
+          end
         end
       end
-      cost
-    end
+
+      # Check does the input contents Farsi Character
+      def is_persian(str)
+        str =~ /\p{Arabic}/
+      end
+
+      # Send XMLmarkup to Web Service
+      def send_xml(out_xml)
+        uri = URI.parse(@url)
+        http = Net::HTTP.new(uri.host, uri.port)
+        request = Net::HTTP::Post.new(uri.request_uri)
+
+        @logger.error "#$%$ #{@user}"
+        request.basic_auth @user, @password
+        request.body = out_xml
+
+        log("Sending request: #{request.inspect}")
+        response = http.request(request)
+
+        log("Response: #{response}")
+        return response.body
+      end
+
+      # Cost estimates
+      def estimate_cost(numbers, text)
+        cost = 0
+        if is_persian(text)
+          sms_length = (text.length / 67.0).ceil
+        else
+          sms_length = (text.length / 157.0).ceil
+        end
+        numbers.each do |number|
+          if is_persian(text)
+            cost = cost + sms_length * 1.5
+          else
+            cost = cost + sms_length
+          end
+        end
+        cost
+      end
   end
 end
+
