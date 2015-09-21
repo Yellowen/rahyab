@@ -107,9 +107,13 @@ module Rahyab
       content = source.parse
       log("Content: #{content}")
 
-      @errors = content.find_first('message').content.strip
-      return 0 if @errors
-      return content.find_first('/userBalance').content.strip.to_f
+      if error = content.find_first('message')
+        @errors = error.content.strip
+        0
+      else
+        # TODO: Check for other possible results in here
+        return content.find_first('/userBalance').content.strip.to_f
+      end
     end
 
 
