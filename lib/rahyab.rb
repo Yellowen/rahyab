@@ -4,7 +4,6 @@ require "builder"
 require 'net/http'
 require 'xml'
 require 'libxml_to_hash'
-require 'pry'
 
 module Rahyab
   require 'rahyab/string'
@@ -102,7 +101,7 @@ module Rahyab
       builder.getUserBalance(company: @company)
 
       result = send_xml(builder.target!)
-      
+
       source = XML::Parser.string(result)
       content = source.parse
       log("Content: #{content}")
@@ -168,4 +167,3 @@ module Rahyab
       end
   end
 end
-
