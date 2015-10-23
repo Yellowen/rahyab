@@ -92,9 +92,15 @@ module Rahyab
       builder.smsStatusPoll(company: @company) do |b|
         b.batch(batchID: batchID)
       end
-      out_xml = builder.target!
-      result = send_xml(out_xml)
-      Hash.from_libxml(result)
+      out_xml     = builder.target!
+      result      = send_xml(out_xml)
+      result_hash = Hash.from_libxml(result)
+
+      if !result_hash["errorResponse"].nil?
+        return nil
+      else
+        result_hash["smsStatusPollResponse"]["batch"].subnodes["sms"]["status"]
+      end
     end
 
     # Check the credit that how many sms can be send
