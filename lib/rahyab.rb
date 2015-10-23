@@ -26,6 +26,7 @@ module Rahyab
       # Create the send XMLmarkup
       estimate_cost = estimate_cost(numbers, text)
       return -1 if estimate_cost == -1
+
       if estimate_cost < get_balance
         identity         = "#{Time.now.to_i}#{rand(1000000000..9999999999)}"
         batchID          = @company + "+" + identity
@@ -57,11 +58,13 @@ module Rahyab
         out_xml = builder.target!
 
         result = send_xml(out_xml)
+
         source = XML::Parser.string(result)
         content = source.parse
 
         if content.find_first('ok')
           if  content.find_first('ok').content.include? 'CHECK_OK'
+            @errors = nil
             batchID
           else
             @errors = "Something going wrong"
